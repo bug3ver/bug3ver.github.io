@@ -1,2 +1,1 @@
-# bug3ver.github.io
-. 
+Goal  Counter
