@@ -113,6 +113,15 @@ td.h,td.g{font-weight:800;font-variant-numeric:tabular-nums}
 tr.cur td{background:color-mix(in srgb,var(--fc) 22%,transparent)}
 tr.cur td:first-child{box-shadow:inset 4px 0 0 var(--fc)}
 .reset{border-radius:12px;background:rgba(255,107,91,.08);border-color:rgba(255,123,107,.35)}
+.seg select{appearance:none;-webkit-appearance:none;background-color:transparent;color:var(--tx);border:0;font-size:16px;font-weight:700;padding:9px 36px 9px 16px;border-radius:9px;min-width:120px;background-repeat:no-repeat;background-position:right 12px center;background-image:url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2712%27 height=%278%27%3E%3Cpath d=%27M1 1l5 5 5-5%27 fill=%27none%27 stroke=%27%239aab9f%27 stroke-width=%272%27/%3E%3C/svg%3E')}
+.seg select:focus{outline:2px solid var(--ac)}
+.seg option{background:#17231b;color:#e8f0ea}
+.left{flex:1 1 0;min-width:0}
+.left .seg{width:auto;max-width:100%}
+.left .seg button{flex:0 1 auto;width:34px;min-width:0}
+.left .seg select{width:auto;min-width:96px}
+.tm .c{gap:3px}
+.tm .c button{min-width:0;font-size:12px}
 </style>
 </head>
 <body>
@@ -127,7 +136,7 @@ tr.cur td:first-child{box-shadow:inset 4px 0 0 var(--fc)}
 </div>
 <div class="mid"><span id="hcrest"></span><h1>SC Hardt</h1></div>
 <div class="tm">
-<div class="c"><button data-tm="10" id="b10">10'</button><button data-tm="12" id="b12">12'</button><button data-tm="15" id="b15">15'</button><button data-tm="rs">↺</button></div><button class="go" data-tm="go" id="bgo">▶ Start</button></div>
+<div class="c"><button data-tm="8" id="b8">8'</button><button data-tm="10" id="b10">10'</button><button data-tm="12" id="b12">12'</button><button data-tm="15" id="b15">15'</button><button data-tm="rs">↺</button></div><button class="go" data-tm="go" id="bgo">▶ Start</button></div>
 </div>
 <div id="fields"></div>
 <button class="reset" id="reset">Alles zurücksetzen</button>
@@ -150,7 +159,7 @@ document.getElementById("hcrest").innerHTML=crest(64);
 function seg(el,items,sel,key){el.innerHTML=items.map(function(v){return'<button data-k="'+key+'" data-v="'+v+'" class="'+(v===sel?'on':'')+'">'+v+'</button>'}).join("")}
 function render(){
   seg(document.getElementById("fsel"),[1,2],S.n,"n");
-  seg(document.getElementById("psel"),[1,2,3,4,5,6],S.per,"per");
+  document.getElementById("psel").innerHTML='<select data-sel="per" aria-label="Anzahl Spiele">'+[1,2,3,4,5,6].map(function(v){return'<option value="'+v+'"'+(v===S.per?' selected':'')+'>'+v+'</option>'}).join("")+'</select>';
   if(S.cur>=S.per)S.cur=S.per-1;
   var c=[];for(var i=0;i<S.per;i++)c.push(i+1);
   document.getElementById("cur").innerHTML=c.map(function(v){return'<button data-k="cur" data-v="'+(v-1)+'" class="'+(v-1===S.cur?'on':'')+'">'+v+'</button>'}).join("");
@@ -185,6 +194,8 @@ function goal(name){
     P.forEach(function(p){p.x+=p.vx;p.y+=p.vy;p.vy+=.25;p.vx*=.99;p.rot+=.2;x.save();x.translate(p.x,p.y);x.rotate(p.rot);x.fillStyle=p.c;x.globalAlpha=Math.max(0,1-t/2300);x.fillRect(-p.r,-p.r/2,p.r*2,p.r);x.restore()});
     if(t<2300)requestAnimationFrame(fr);else x.clearRect(0,0,w,h)})();
 }
+/* Dropdown Anzahl Spiele */
+document.addEventListener("change",function(e){var t=e.target;if(t.dataset&&t.dataset.sel){S[t.dataset.sel]=+t.value;render()}});
 /* Gastname übernehmen */
 var pend="",askEl=document.getElementById("ask");
 function ask(n){pend=n;askEl.classList.add("on")}
@@ -207,14 +218,14 @@ function sad(){
 var T={min:10,left:600,run:false,end:0,iv:null};
 function fmt(s){var m=Math.floor(s/60),x=s%60;return(m<10?"0":"")+m+":"+(x<10?"0":"")+x}
 function tmShow(){var cs=document.querySelectorAll(".ct");for(var i=0;i<cs.length;i++){cs[i].textContent=fmt(T.left);cs[i].className="ct"+(T.left<=0?" end":"")}
-  document.getElementById("b10").className=T.min===10?"on":"";document.getElementById("b12").className=T.min===12?"on":"";document.getElementById("b15").className=T.min===15?"on":"";
+  document.getElementById("b8").className=T.min===8?"on":"";document.getElementById("b10").className=T.min===10?"on":"";document.getElementById("b12").className=T.min===12?"on":"";document.getElementById("b15").className=T.min===15?"on":"";
   var g=document.getElementById("bgo");g.textContent=T.run?"❚❚ Stopp":"▶ Start";g.className="go"+(T.run?" run":"")}
 function stop(){clearInterval(T.iv);T.run=false}
 function ring(){try{navigator.vibrate&&navigator.vibrate([300,100,300,100,300])}catch(e){}
   try{var A=new(window.AudioContext||window.webkitAudioContext)();for(var i=0;i<3;i++){var o=A.createOscillator(),g=A.createGain();o.frequency.value=880;o.connect(g);g.connect(A.destination);g.gain.value=.2;o.start(A.currentTime+i*.4);o.stop(A.currentTime+i*.4+.25)}}catch(e){}}
 function tick(){T.left=Math.max(0,Math.round((T.end-Date.now())/1000));if(T.left<=0){stop();ring();if(S.cur<S.per-1){S.cur++;T.left=T.min*60;render()}}tmShow()}
 function tmAct(a){
-  if(a==="10"||a==="12"||a==="15"){stop();T.min=+a;T.left=T.min*60}
+  if(a==="8"||a==="10"||a==="12"||a==="15"){stop();T.min=+a;T.left=T.min*60}
   else if(a==="rs"){stop();T.left=T.min*60}
   else if(T.run){tick();stop()}
   else{if(T.left<=0)T.left=T.min*60;T.end=Date.now()+T.left*1000;T.run=true;T.iv=setInterval(tick,250)}
