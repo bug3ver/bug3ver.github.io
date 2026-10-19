@@ -120,6 +120,7 @@ tr.cur td:first-child{box-shadow:inset 4px 0 0 var(--fc)}
 .left .seg{width:auto;max-width:100%}
 .left .seg button{flex:0 1 auto;width:34px;min-width:0}
 .left .seg select{width:auto;min-width:96px}
+:root .card.f3{--fc:#f5a524;--ft:#3a2c12}
 .tm .c{gap:3px}
 .tm .c button{min-width:0;font-size:12px}
 </style>
@@ -147,9 +148,10 @@ tr.cur td:first-child{box-shadow:inset 4px 0 0 var(--fc)}
 
 <script>
 var KEY="torzaehler-v2";
-function fresh(){var f=function(){return{h:"SC Hardt",a:"Gast",s:[[0,0],[0,0],[0,0],[0,0],[0,0],[0,0]]}};return{n:1,per:2,cur:0,f:[f(),f()]}}
+function fresh(){var f=function(){return{h:"SC Hardt",a:"Gast",s:[[0,0],[0,0],[0,0],[0,0],[0,0],[0,0]]}};return{n:1,per:2,cur:0,f:[f(),f(),f()]}}
 var S=fresh();
 try{var r=localStorage.getItem(KEY);if(r){S=JSON.parse(r)}}catch(e){}
+var d0=fresh();while(S.f.length<3)S.f.push(d0.f[S.f.length]);
 S.f.forEach(function(f){while(f.s.length<6)f.s.push([0,0])});
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 function esc(t){return String(t).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
@@ -158,7 +160,7 @@ function cr(n){return /hardt/i.test(n)?crest(28):""}
 document.getElementById("hcrest").innerHTML=crest(64);
 function seg(el,items,sel,key){el.innerHTML=items.map(function(v){return'<button data-k="'+key+'" data-v="'+v+'" class="'+(v===sel?'on':'')+'">'+v+'</button>'}).join("")}
 function render(){
-  seg(document.getElementById("fsel"),[1,2],S.n,"n");
+  seg(document.getElementById("fsel"),[1,2,3],S.n,"n");
   document.getElementById("psel").innerHTML='<select data-sel="per" aria-label="Anzahl Spiele">'+[1,2,3,4,5,6].map(function(v){return'<option value="'+v+'"'+(v===S.per?' selected':'')+'>'+v+'</option>'}).join("")+'</select>';
   if(S.cur>=S.per)S.cur=S.per-1;
   var c=[];for(var i=0;i<S.per;i++)c.push(i+1);
@@ -198,8 +200,8 @@ function goal(name){
 document.addEventListener("change",function(e){var t=e.target;if(t.dataset&&t.dataset.sel){S[t.dataset.sel]=+t.value;render()}});
 /* Gastname übernehmen */
 var pend="",askEl=document.getElementById("ask");
-function ask(n){pend=n;askEl.classList.add("on")}
-document.getElementById("ay").onclick=function(){S.f[1].a=pend;askEl.classList.remove("on");render()};
+function ask(n){pend=n;askEl.querySelector("span").textContent=S.n>2?"Auch für Feld 2 und 3 übernehmen?":"Auch für Feld 2 übernehmen?";askEl.classList.add("on")}
+document.getElementById("ay").onclick=function(){for(var k=1;k<S.n;k++)S.f[k].a=pend;askEl.classList.remove("on");render()};
 document.getElementById("an").onclick=function(){askEl.classList.remove("on")};
 /* Gegentor */
 var sdv=document.getElementById("sad"),cv2=document.getElementById("cv2"),stm;
@@ -241,7 +243,7 @@ document.addEventListener("click",function(e){
 });
 document.addEventListener("input",function(e){var t=e.target;if(t.dataset&&t.dataset.f!==undefined){S.f[+t.dataset.f][t.dataset.t]=t.value;save()}});
 document.addEventListener("change",function(e){var t=e.target;if(t.dataset&&t.dataset.f!==undefined){
-  if(t.dataset.f==="0"&&t.dataset.t==="a"&&S.n===2&&S.f[1].a!==S.f[0].a)ask(S.f[0].a);
+  if(t.dataset.f==="0"&&t.dataset.t==="a"&&S.n>=2&&(S.f[1].a!==S.f[0].a||(S.n>2&&S.f[2].a!==S.f[0].a)))ask(S.f[0].a);
   render()}});
 var rb=document.getElementById("reset"),armed=false;
 rb.addEventListener("click",function(){
